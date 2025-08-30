@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TuMarca — Lista de pre-orden</title>
+  <meta name="description" content="Anótate con tu email para enterarte del lanzamiento y acceso anticipado." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <style>
+    :root { --bg:#0f172a; --card:#111827; --text:#e5e7eb; --muted:#9ca3af; }
+    *{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#0f172a, #111827);font-family:system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;color:var(--text)}
+    .wrap{max-width:720px;margin:0 auto;padding:48px 20px;min-height:100svh;display:grid;place-items:center}
+    .card{width:100%; background:rgba(17,24,39,.7); backdrop-filter: blur(10px); border:1px solid rgba(255,255,255,.08); border-radius:24px; padding:32px; box-shadow: 0 10px 40px rgba(0,0,0,.35)}
+    h1{font-size:clamp(28px,4vw,40px);margin:0 0 8px}
+    p.lead{color:var(--muted);margin:0 0 24px}
+    form{display:grid; gap:12px}
+    label{font-weight:600}
+    input[type="email"]{width:100%;padding:16px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:#0b1220;color:var(--text);font-size:16px}
+    input[type="email"]::placeholder{color:#6b7280}
+    .row{display:grid; gap:12px; grid-template-columns: 1fr auto}
+    button{padding:14px 18px;border:0;border-radius:14px;background:#22c55e;color:#08110f;font-weight:800;font-size:16px;cursor:pointer}
+    button:disabled{opacity:.6;cursor:not-allowed}
+    .consent{display:flex;gap:10px;align-items:flex-start;color:var(--muted);font-size:14px}
+    .consent input{margin-top:3px}
+    .hint{color:#9ca3af;font-size:12px}
+    .footer{margin-top:16px;color:#9ca3af;font-size:12px}
+    .success,.error{display:none;margin-top:10px;padding:12px;border-radius:12px;font-size:14px}
+    .success{background:#052e1a;color:#a7f3d0;border:1px solid #064e3b}
+    .error{background:#3f1d1d;color:#fecaca;border:1px solid #7f1d1d}
+    /* honeypot */
+    .hp{position:absolute;left:-5000px;top:auto;width:1px;height:1px;overflow:hidden}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>👋 ¡Únete a la pre-orden de <strong>TuMarca</strong>!</h1>
+      <p class="lead">Deja tu correo y sé de las primeras personas en recibir acceso, descuentos y novedades del lanzamiento.</p>
+
+      <!-- Netlify Forms: name, netlify, netlify-honeypot -->
+      <form name="preorden" method="POST" data-netlify="true" netlify-honeypot="campoweb" onsubmit="return handleSubmit(event)">
+        <!-- Mensajes -->
+        <div id="msg-success" class="success">¡Listo! Revisa tu correo para confirmar tu suscripción.</div>
+        <div id="msg-error" class="error">Ups, hubo un problema. Intenta de nuevo.</div>
+
+        <!-- Honeypot -->
+        <div class="hp">
+          <label>Si eres humano, deja esto vacío: <input name="campoweb" /></label>
+        </div>
+
+        <label for="email">Correo electrónico</label>
+        <div class="row">
+          <input type="email" id="email" name="email" placeholder="tu@email.com" required inputmode="email" autocomplete="email" />
+          <button id="btn" type="submit">Anotarme</button>
+        </div>
+
+        <label class="consent">
+          <input type="checkbox" name="consent" required />
+          <span>Acepto que <strong>TuMarca</strong> use mi email para enviarme noticias del lanzamiento y entiendo que puedo cancelar mi suscripción cuando quiera. <a href="/privacidad" target="_blank" rel="noopener">Política de Privacidad</a>.</span>
+        </label>
+
+        <p class="hint">Prometemos no hacer spam. Recibirás solo noticias del lanzamiento y beneficios de la pre-orden.</p>
+
+        <!-- Netlify bot field (reCAPTCHA opcional si lo activas en Netlify)
+        <div data-netlify-recaptcha="true"></div>
+        -->
+      </form>
+
+      <div class="footer">© <span id="year"></span> TuMarca</div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    function handleSubmit(e){
+      const btn = document.getElementById('btn');
+      const ok = document.getElementById('msg-success');
+      const err = document.getElementById('msg-error');
+      btn.disabled = true;
+
+      // Deja que Netlify procese y luego mostramos feedback sin recargar
+      fetch("/", { method: "POST", headers: {"Content-Type":"application/x-www-form-urlencoded"},
+        body: new URLSearchParams(new FormData(e.target)).toString()
+      })
+      .then(()=>{ ok.style.display="block"; e.target.reset(); })
+      .catch(()=>{ err.style.display="block"; })
+      .finally(()=>{ btn.disabled = false; });
+
+      e.preventDefault();
+      return false;
+    }
+  </script>
+</body>
+</html>
